@@ -4,7 +4,8 @@ from sqlalchemy import text
 
 class Service(db.Model):
     __tablename__ = 'service'
-    id = db.Column(db.String(36), primary_key=True)
+    sqlite_autoincrement=True
+    id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(64), unique=False)
     service_type  = db.Column(db.String(64))
     house = db.Column(db.String(64), unique=False)
