@@ -3,7 +3,11 @@ from app.models import Service
 import json
 import pdb
 import traceback
+import re
 
+def striphtml(data):
+    p = re.compile(r'<.*?>')
+    return p.sub('', data)
 
 def get_route(address, service):
 
@@ -11,10 +15,20 @@ def get_route(address, service):
     response = requests.get(request_string)
     #if response status code
     response = json.loads(response.text)
-    pdb.set_trace()
-    route = (response['routes'][0]['legs'][0]['distance']['text'].split(" ")[0],
-             response['routes'][0]['legs'][0]['duration']['text'])
-    return route
+    directions = []
+
+    for steps in response['routes'][0]['legs'][0]['steps']:
+      directions.append(striphtml(steps['html_instructions']))
+
+
+    data = {
+      'service' : service,
+      'distance': response['routes'][0]['legs'][0]['distance']['text'].split(" ")[0],
+      'duration': response['routes'][0]['legs'][0]['duration']['text'],
+      'directions': directions
+    }
+    return data
+
 
 def get_closest_service(service_type, address):
   try:
@@ -26,20 +40,19 @@ def get_closest_service(service_type, address):
 
     if(service_type == 'shelter'):
       options = Service.query.filter(Service.service_type=='shelter').all()
-      min_distance = 10000
-      min_duration = 10000
-      min_distance_service = None
+      min_distance_service = {'distance': 1000000}
 
       for service in options:
-        route = get_route(address_string, service)
-        if float(route[0]) < min_distance:
-          min_distance_service = service
-          min_distance = route[0]
-          min_duration = route[1]
+        service_data = get_route(address_string, service)
+        if float(service_data['distance']) < float(min_distance_service['distance']):
+          min_distance_service = service_data
 
-    return((min_distance_service, min_distance, min_duration))
+    return(min_distance_service)
   except:
     traceback.print_exc()
     return('ERROR')
 
-
+def to_string(data):
+  answer = 'The closest {} service to your location is ~{} away at {} {}. For directions press 5.'.format(
+    data['service'].service_type, data['duration'], data['service'].house, data['service'].street )
+  return answer

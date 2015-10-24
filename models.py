@@ -8,8 +8,12 @@ class Service(db.Model):
     name = db.Column(db.String(64), unique=False)
     service_type  = db.Column(db.String(64))
     house = db.Column(db.String(64), unique=False)
-    street = db.Column(db.String(120), unique=True)
+    street = db.Column(db.String(120), unique=False)
+    notes = db.Column(db.String(1000), unique=False)
+    phone = db.Column(db.String(64), unique=False)
+    website = db.Column(db.String(64), unique=False)
     schedule = db.relationship('Schedule', backref='service')
+
 
     def __repr__(self):
         return '<Service %r>' % (self.name)
