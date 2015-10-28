@@ -3,6 +3,7 @@ from flask import request, redirect, session
 import twilio.twiml
 import pdb
 
+
 SECRET_KEY = 'a secret key'
 callers = {}
 addresses = {}
@@ -18,7 +19,7 @@ def parseInitialResponse(body, from_number):
     callers[from_number] = 'meal'
     resp.message("Great, enter your current street address.")
   else:
-    callers[from_number] = 'init'
+    callers[from_number] = 'nothing'
     resp.message("Invalid Response. Press 1 for the nearest shelter, press 2 for a meal.")
 
   return str(resp)
@@ -64,7 +65,7 @@ def getShelterAddress(address, from_number):
 
   request = search.get_closest_service('shelter', addresses[from_number])
   messsage = search.get_directions(request)
-  callers[from_number] = 'init'
+  callers[from_number] = 'nothing'
 
   resp.message(messsage)
   return str(resp)
@@ -74,7 +75,7 @@ def getFoodAddress(address, from_number):
 
   request = search.get_closest_service('food', addresses[from_number])
   messsage = search.get_directions(request)
-  callers[from_number] = 'init'
+  callers[from_number] = 'nothing'
 
   resp.message(messsage)
   return str(resp)
@@ -99,7 +100,7 @@ def index():
       return options[state](body, from_number)
     else:
       callers[from_number] = 'init'
-      resp.message("Invalid Response. Press 1 for the nearest shelter, press 2 for a meal.")
+      resp.message("Press 1 for the nearest shelter, press 2 for a meal.")
   else:
     callers[from_number] = 'init'
     resp.message("Welcome to Text2Help. Press 1 for the nearest shelter, press 2 for a meal.")

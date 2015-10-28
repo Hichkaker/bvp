@@ -4,7 +4,11 @@ import json
 import pdb
 import traceback
 import re
-#from app import keen
+from app import app
+from datetime import datetime
+
+
+
 
 def striphtml(data):
     p = re.compile(r'<.*?>')
@@ -16,22 +20,16 @@ def get_route(address, service):
     response = requests.get(request_string)
     #if response status code
     response = json.loads(response.text)
-   # try:
-    #    keen.add_event("request", {
-     #     "": "lloyd",
-      #    "referred_by": "harry"
-      #})
-    #except:
-     # pass
-
+    #pdb.set_trace()
+    
     directions = []
-   # pdb.set_trace()
     for steps in response['routes'][0]['legs'][0]['steps']:
       directions.append(striphtml(steps['html_instructions']))
 
 
     data = {
       'service' : service,
+      'start': response['routes'][0]['legs'][0]['start_location'],
       'distance': response['routes'][0]['legs'][0]['distance']['text'].split(" ")[0],
       'duration': response['routes'][0]['legs'][0]['duration']['text'],
       'directions': directions
@@ -57,6 +55,11 @@ def get_closest_service(service_type, address):
         min_distance_service = service_data
     #pdb.set_trace()
     re = (min_distance_service,True)
+    geotag = [
+      str(datetime.utcnow()),
+      str(service_data['start']['lat']),
+      str(service_data['start']['lng'])]
+    app.logger.info('|'.join(geotag))
     return re
   except:
     traceback.print_exc()
